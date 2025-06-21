@@ -157,6 +157,14 @@
             box-shadow: none;
         }
         
+        /* モバイルデバイスでのホバー状態を無効化 */
+        @media (hover: none) and (pointer: coarse) {
+            .option-btn:hover {
+                background: #f8f9fa;
+                border-color: #e9ecef;
+            }
+        }
+        
         .question-info {
             color: #666;
             font-size: 0.9rem;
