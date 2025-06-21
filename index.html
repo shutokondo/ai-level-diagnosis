@@ -149,16 +149,15 @@
             font-size: 1rem;
             text-align: left;
             -webkit-tap-highlight-color: transparent;
+            box-shadow: none;
         }
         
         .option-btn:hover {
             background: #e3f2fd;
             border-color: #2196f3;
-            transform: none;
-            box-shadow: none;
         }
         
-        /* モバイルデバイスでのホバー状態を無効化 */
+        /* スマホ版のみホバーデザインを無効化 */
         @media (hover: none) and (pointer: coarse) {
             .option-btn:hover {
                 background: #f8f9fa;
