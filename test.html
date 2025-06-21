@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI活用レベル診断</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            text-align: center;
+            max-width: 600px;
+            width: 100%;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 2.5rem;
+        }
+        
+        p {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1rem;
+        }
+        
+        .start-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .start-btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .question-container {
+            display: none;
+        }
+        
+        .question {
+            font-size: 1.3rem;
+            color: #333;
+            margin-bottom: 30px;
+        }
+        
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .option {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            padding: 15px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .option:hover {
+            background: #e3f2fd;
+            border-color: #2196f3;
+        }
+        
+        .result-container {
+            display: none;
+        }
+        
+        .level-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 40px;
+            border-radius: 50px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- ホーム画面 -->
+        <div id="home">
+            <h1>🤖 AI活用レベル診断</h1>
+            <p>あなたのAI活用スキルを診断します<br>約3分で完了！</p>
+            <button class="start-btn" onclick="startQuiz()">診断を開始する</button>
+        </div>
+        
+        <!-- 質問画面 -->
+        <div id="quiz" class="question-container">
+            <div class="question" id="question-text"></div>
+            <div class="options" id="options-container"></div>
+            <div style="margin-top: 20px; color: #666;">
+                質問 <span id="current-q">1</span> / 10 
+                (<span id="progress">10</span>%)
+            </div>
+        </div>
+        
+        <!-- 結果画面 -->
+        <div id="result" class="result-container">
+            <h2>診断結果</h2>
+            <div class="level-badge" id="level-name"></div>
+            <p id="level-description"></p>
+            <button class="start-btn" onclick="restartQuiz()" style="margin-top: 20px;">もう一度診断する</button>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            {
+                question: "ChatGPTなどの生成AIを使った経験はありますか？",
+                options: [
+                    { text: "名前は聞いたことがあるが、使ったことはない", score: 0 },
+                    { text: "興味があり数回試してみた", score: 1 },
+                    { text: "日常的に使っている", score: 2 },
+                    { text: "業務の中で頻繁に活用し、他人に使い方を教えている", score: 3 }
+                ],
+                weight: 1.0
+            },
+            {
+                question: "AIに指示するプロンプト設計を意識したことはありますか？",
+                options: [
+                    { text: "指示文（プロンプト）について考えたことがない", score: 0 },
+                    { text: "自分なりに工夫して書いているが、毎回うまくいくとは限らない", score: 1 },
+                    { text: "プロンプトを業務ごとに最適化して使っている", score: 2 },
+                    { text: "思い通りのプロンプトが作れており、他人にも展開している", score: 3 }
+                ],
+                weight: 1.5
+            }
+        ];
+
+        const levels = [
+            { name: "AI未経験", description: "AIという言葉は知っているが、使ったことはない。" },
+            { name: "AI初心者", description: "ChatGPTや画像生成AIを使ったことがある。" },
+            { name: "AI活用者", description: "業務フローにAIを組み込んで使える。" },
+            { name: "AI設計者", description: "業務に合わせたAIの活用方法を設計できる。" },
+            { name: "AI開発者・推進者", description: "自社専用AIツールを開発・導入できる。" }
+        ];
+
+        let currentQuestion = 0;
+        let answers = [];
+        let totalScore = 0;
+
+        function startQuiz() {
+            document.getElementById('home').style.display = 'none';
+            document.getElementById('quiz').style.display = 'block';
+            showQuestion();
+        }
+
+        function showQuestion() {
+            const q = questions[currentQuestion];
+            document.getElementById('question-text').textContent = q.question;
+            document.getElementById('current-q').textContent = currentQuestion + 1;
+            document.getElementById('progress').textContent = Math.round(((currentQuestion + 1) / questions.length) * 100);
+            
+            const container = document.getElementById('options-container');
+            container.innerHTML = '';
+            
+            q.options.forEach((option, index) => {
+                const div = document.createElement('div');
+                div.className = 'option';
+                div.textContent = option.text;
+                div.onclick = () => selectAnswer(option.score, q.weight);
+                container.appendChild(div);
+            });
+        }
+
+        function selectAnswer(score, weight) {
+            totalScore += score * weight;
+            currentQuestion++;
+            
+            if (currentQuestion < questions.length) {
+                showQuestion();
+            } else {
+                showResult();
+            }
+        }
+
+        function showResult() {
+            document.getElementById('quiz').style.display = 'none';
+            document.getElementById('result').style.display = 'block';
+            
+            let level = levels[0];
+            if (totalScore >= 4) level = levels[1];
+            if (totalScore >= 6) level = levels[2];
+            if (totalScore >= 8) level = levels[3];
+            if (totalScore >= 10) level = levels[4];
+            
+            document.getElementById('level-name').textContent = level.name;
+            document.getElementById('level-description').textContent = level.description;
+        }
+
+        function restartQuiz() {
+            currentQuestion = 0;
+            totalScore = 0;
+            answers = [];
+            document.getElementById('result').style.display = 'none';
+            document.getElementById('home').style.display = 'block';
+        }
+    </script>
+</body>
+</html>
