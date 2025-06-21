@@ -733,7 +733,11 @@
                 const button = document.createElement('button');
                 button.className = 'option-btn';
                 button.textContent = option.text;
-                button.onclick = () => selectAnswer(option.score, q.weight);
+                button.onclick = (e) => {
+                    // 選択後にフォーカスを外してホバー状態をクリア
+                    e.target.blur();
+                    selectAnswer(option.score, q.weight);
+                };
                 container.appendChild(button);
             });
         }
