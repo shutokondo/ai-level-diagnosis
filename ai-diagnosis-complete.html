@@ -152,6 +152,30 @@
             box-shadow: none;
         }
         
+        .option-btn.selected {
+            background: #e3f2fd;
+            border-color: #2196f3;
+        }
+        
+        .next-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+            width: 100%;
+        }
+        
+        .next-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+        
         .option-btn:hover {
             background: #e3f2fd;
             border-color: #2196f3;
@@ -173,6 +197,12 @@
             .option-btn:active {
                 background: #f8f9fa;
                 border-color: #e9ecef;
+            }
+            
+            /* スマホ版で選択された項目は水色のホバー効果を表示 */
+            .option-btn.selected {
+                background: #e3f2fd !important;
+                border-color: #2196f3 !important;
             }
         }
         
@@ -727,6 +757,8 @@
         let currentQuestion = 0;
         let totalScore = 0;
         let currentResult = null;
+        let selectedOption = null;
+        let isMobile = window.matchMedia('(hover: none) and (pointer: coarse)').matches;
 
         function startQuiz() {
             document.getElementById('home').style.display = 'none';
@@ -747,20 +779,57 @@
             
             const container = document.getElementById('options-container');
             container.innerHTML = '';
+            selectedOption = null;
             
             q.options.forEach((option, index) => {
                 const button = document.createElement('button');
                 button.className = 'option-btn';
                 button.textContent = option.text;
                 button.onclick = (e) => {
-                    // 選択後にフォーカスを外してホバー状態をクリア
                     e.target.blur();
-                    selectAnswer(option.score, q.weight);
+                    if (isMobile) {
+                        // スマホ版：選択状態のみ更新
+                        selectOption(option, button);
+                    } else {
+                        // PC版：即座に次の質問へ
+                        selectAnswer(option.score, q.weight);
+                    }
                 };
                 container.appendChild(button);
             });
+            
+            // スマホ版のみ「次の質問へ」ボタンを表示
+            if (isMobile) {
+                const nextButton = document.createElement('button');
+                nextButton.className = 'next-btn';
+                nextButton.textContent = '次の質問へ';
+                nextButton.disabled = true;
+                nextButton.onclick = () => {
+                    if (selectedOption) {
+                        selectAnswer(selectedOption.score, q.weight);
+                    }
+                };
+                container.appendChild(nextButton);
+            }
         }
 
+        function selectOption(option, buttonElement) {
+            // 他の選択肢のハイライトを削除
+            document.querySelectorAll('.option-btn').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            
+            // 選択された選択肢をハイライト
+            buttonElement.classList.add('selected');
+            selectedOption = option;
+            
+            // 「次の質問へ」ボタンを有効化
+            const nextButton = document.querySelector('.next-btn');
+            if (nextButton) {
+                nextButton.disabled = false;
+            }
+        }
+        
         function selectAnswer(score, weight) {
             totalScore += score * weight;
             currentQuestion++;
