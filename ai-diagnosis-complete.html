@@ -157,20 +157,6 @@
             box-shadow: none;
         }
         
-        .option-btn:focus {
-            outline: none;
-            background: #f8f9fa;
-            border-color: #e9ecef;
-        }
-        
-        /* モバイルデバイスでのホバー状態を無効化 */
-        @media (hover: none) and (pointer: coarse) {
-            .option-btn:hover {
-                background: #f8f9fa;
-                border-color: #e9ecef;
-            }
-        }
-        
         .question-info {
             color: #666;
             font-size: 0.9rem;
@@ -747,26 +733,9 @@
                 const button = document.createElement('button');
                 button.className = 'option-btn';
                 button.textContent = option.text;
-                button.onclick = (e) => {
-                    // クリック後にフォーカスとホバー状態をクリア
-                    e.target.blur();
-                    selectAnswer(option.score, q.weight);
-                };
-                // タッチデバイス用のイベント処理
-                button.ontouchend = (e) => {
-                    e.target.blur();
-                };
+                button.onclick = () => selectAnswer(option.score, q.weight);
                 container.appendChild(button);
             });
-            
-            // 新しい質問表示時に全てのボタンからフォーカスを外す
-            setTimeout(() => {
-                document.querySelectorAll('.option-btn').forEach(btn => {
-                    btn.blur();
-                    btn.style.background = '#f8f9fa';
-                    btn.style.borderColor = '#e9ecef';
-                });
-            }, 50);
         }
 
         function selectAnswer(score, weight) {
