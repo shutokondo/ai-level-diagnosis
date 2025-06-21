@@ -740,16 +740,6 @@
                 };
                 container.appendChild(button);
             });
-            
-            // 新しい質問表示時に全てのボタンのスタイルを初期化
-            setTimeout(() => {
-                document.querySelectorAll('.option-btn').forEach(btn => {
-                    btn.blur();
-                    // 強制的にスタイルを初期状態にリセット
-                    btn.style.background = '#f8f9fa';
-                    btn.style.borderColor = '#e9ecef';
-                });
-            }, 50);
         }
 
         function selectAnswer(score, weight) {
